@@ -1,4 +1,3 @@
-// security-plugin.php (Main plugin file)
 <?php
 /*
 Plugin Name: Custom Security Plugin
@@ -44,9 +43,10 @@ class CustomSecurityPlugin {
 
     private function add_hooks() {
         add_action('admin_menu', array($this->settings, 'add_admin_menu'));
-        add_action('init', array($this->waf, 'check_security'));
+        // Removed the incorrect hook for check_security
         add_action('plugins_loaded', array($this->feature_manager, 'init'));
         add_action('admin_init', array($this->settings, 'register_settings'));
+        add_action('init', array($this->headers, 'add_security_headers'));
     }
 }
 

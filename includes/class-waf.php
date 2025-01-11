@@ -31,6 +31,59 @@ class SecurityWAF {
         $this->check_attack_patterns($ip);
     }
 
+    private function check_attack_patterns($ip) {
+        // Check for SQL injection
+        if ($this->detect_sql_injection()) {
+            $this->log_violation($ip, 'SQL Injection Attempt');
+            $this->block_request('Invalid Request');
+        }
+
+        // Check for XSS
+        if ($this->detect_xss()) {
+            $this->log_violation($ip, 'XSS Attempt');
+            $this->block_request('Invalid Request');
+        }
+
+        // Check for file inclusion
+        if ($this->detect_file_inclusion()) {
+            $this->log_violation($ip, 'File Inclusion Attempt');
+            $this->block_request('Invalid Request');
+        }
+    }
+
+    private function detect_sql_injection() {
+        $patterns = array(
+            '/union\s+select/i',
+            '/exec\s*\(/i',
+            '/INFORMATION_SCHEMA/i',
+            '/into\s+outfile/i'
+        );
+        
+        return $this->check_patterns($patterns);
+    }
+
+    private function detect_xss() {
+        $patterns = array(
+            '/<script.*?>.*?<\/script>/is',
+            '/javascript:/i',
+            '/onload=/i',
+            '/onerror=/i'
+        );
+        
+        return $this->check_patterns($patterns);
+    }
+
+    private function detect_file_inclusion() {
+        $patterns = array(
+            '/\.\.\//i',
+            '/etc\/passwd/i',
+            '/include\s*\(/i',
+            '/require\s*\(/i'
+        );
+        
+        return $this->check_patterns($patterns);
+    }
+
     private function check_patterns($patterns) {
         $input = array(
             $_SERVER['REQUEST_URI'],
